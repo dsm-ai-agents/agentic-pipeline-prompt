@@ -1,0 +1,558 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>The 5-Line Agentic Pipeline Prompt</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#0d0f14;--panel:#151922;--panel2:#1b2030;--line:#262c3b;--text:#e8ebf2;--mute:#9aa3b5;
+  --c1:#ff8a4c;--c2:#5ec8ff;--c3:#a98bff;--c4:#4fe0a6;--c5:#ffd166;--c6:#ff6b8b;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Inter,system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.6;font-size:16px}
+.wrap{max-width:980px;margin:0 auto;padding:0 20px}
+header{padding:56px 0 36px;border-bottom:1px solid var(--line)}
+.eyebrow{font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--c4);font-weight:600}
+h1{font-size:clamp(30px,6vw,52px);line-height:1.08;font-weight:800;margin:12px 0 14px;letter-spacing:-.02em}
+h1 span{background:linear-gradient(90deg,var(--c1),var(--c3),var(--c2));-webkit-background-clip:text;background-clip:text;color:transparent}
+.lead{color:var(--mute);font-size:18px;max-width:680px}
+nav.toc{display:flex;flex-wrap:wrap;gap:8px;margin-top:24px}
+nav.toc a{font-size:13px;color:var(--text);text-decoration:none;border:1px solid var(--line);padding:6px 12px;border-radius:99px;background:var(--panel)}
+nav.toc a:hover{border-color:var(--c2)}
+section{padding:48px 0;border-bottom:1px solid var(--line)}
+h2{font-size:clamp(22px,4vw,30px);font-weight:800;letter-spacing:-.01em;margin-bottom:8px}
+h3{font-size:18px;font-weight:700;margin-bottom:6px}
+.sub{color:var(--mute);margin-bottom:24px}
+.formula{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:20px 0 4px;font-weight:600;font-size:14px}
+.formula .chip{padding:8px 12px;border-radius:10px;background:var(--panel2);border:1px solid var(--line)}
+.formula .arrow{color:var(--mute)}
+.steps{display:grid;gap:14px}
+.step{display:grid;grid-template-columns:52px 1fr;gap:16px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:20px;border-left:4px solid var(--c)}
+.num{width:52px;height:52px;border-radius:14px;display:grid;place-items:center;font-weight:800;font-size:22px;color:#0d0f14;background:var(--c)}
+.step p{color:var(--mute);font-size:15px}
+.step .why{margin-top:10px;font-size:14px;color:var(--text)}
+.step .why b{color:var(--c)}
+code,.mono{font-family:"JetBrains Mono",monospace;font-size:.88em}
+.step code{background:var(--panel2);padding:2px 6px;border-radius:6px;color:var(--c)}
+.pattern{margin-top:10px;font-family:"JetBrains Mono",monospace;font-size:13px;background:#0a0c10;border:1px dashed var(--line);border-radius:10px;padding:10px 12px;color:var(--text);white-space:pre-wrap}
+.optional{display:inline-block;font-size:11px;text-transform:uppercase;letter-spacing:.08em;padding:2px 8px;border-radius:99px;border:1px solid var(--c6);color:var(--c6);margin-left:6px;vertical-align:middle}
+
+/* CLAUDE.md explainer */
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:22px}
+.card ul{list-style:none;display:grid;gap:10px;margin-top:10px}
+.card li{display:flex;gap:10px;font-size:15px}
+.card li b{color:var(--c2);min-width:118px;display:inline-block}
+.analogy{background:linear-gradient(135deg,rgba(94,200,255,.12),rgba(169,139,255,.12));border:1px solid var(--line);border-radius:16px;padding:20px;margin-bottom:20px;font-size:16px}
+pre.md{background:#0a0c10;border:1px solid var(--line);border-radius:14px;padding:18px;overflow-x:auto;font-family:"JetBrains Mono",monospace;font-size:12.5px;line-height:1.65;color:#c9d1e3}
+pre.md .h{color:var(--c2);font-weight:600}
+pre.md .k{color:var(--c5)}
+pre.md .c{color:#5f6a80}
+
+/* Annotated samples */
+.legend{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:18px}
+.legend span{font-size:12px;font-weight:600;padding:4px 10px;border-radius:99px;border:1px solid}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.tab{cursor:pointer;font:inherit;font-size:14px;font-weight:600;color:var(--mute);background:var(--panel);border:1px solid var(--line);padding:9px 14px;border-radius:10px}
+.tab.on{color:#0d0f14;background:var(--c4);border-color:var(--c4)}
+.tab .star{color:var(--c5)}
+.tab.on .star{color:#0d0f14}
+.sample{display:none}
+.sample.on{display:block}
+.sample .meta{font-size:14px;color:var(--mute);margin-bottom:12px}
+.prompt{background:#0a0c10;border:1px solid var(--line);border-radius:14px;padding:18px;font-family:"JetBrains Mono",monospace;font-size:13px;line-height:1.75;white-space:pre-wrap;word-break:break-word}
+.seg{border-radius:4px;padding:1px 2px;position:relative}
+.s1{background:rgba(255,138,76,.16);box-shadow:inset 0 -2px 0 var(--c1)}
+.s2{background:rgba(94,200,255,.14);box-shadow:inset 0 -2px 0 var(--c2)}
+.s3{background:rgba(169,139,255,.16);box-shadow:inset 0 -2px 0 var(--c3)}
+.s4{background:rgba(79,224,166,.14);box-shadow:inset 0 -2px 0 var(--c4)}
+.s5{background:rgba(255,209,102,.14);box-shadow:inset 0 -2px 0 var(--c5)}
+.s6{background:rgba(255,107,139,.14);box-shadow:inset 0 -2px 0 var(--c6)}
+.notes{margin-top:14px;display:grid;gap:8px}
+.note{font-size:14px;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 14px}
+.note b{color:var(--c5)}
+
+/* Builder */
+.builder{display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:13px;font-weight:600;margin-bottom:6px}
+.field label i{font-style:normal;color:var(--mute);font-weight:400}
+.field input,.field textarea{width:100%;font:inherit;font-size:14px;color:var(--text);background:var(--panel2);border:1px solid var(--line);border-radius:10px;padding:10px 12px;resize:vertical}
+.field input:focus,.field textarea:focus{outline:none;border-color:var(--c2)}
+.agent-row{display:grid;grid-template-columns:1fr 1.6fr 34px;gap:8px;margin-bottom:8px}
+.btn{cursor:pointer;font:inherit;font-weight:600;font-size:14px;border-radius:10px;padding:10px 14px;border:1px solid var(--line);background:var(--panel2);color:var(--text)}
+.btn.primary{background:var(--c4);color:#0d0f14;border-color:var(--c4)}
+.btn.x{padding:0;width:34px;color:var(--mute)}
+.toggle{display:flex;gap:8px;align-items:center;font-size:14px;color:var(--mute);margin:6px 0}
+.out-wrap{position:sticky;top:16px}
+.out-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:8px}
+.copied{font-size:13px;color:var(--c4);opacity:0;transition:.2s}
+.copied.show{opacity:1}
+
+/* Checklist */
+.checks{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.check{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:16px}
+.check .bad{color:var(--c6);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em}
+.check .good{color:var(--c4);font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;margin-top:8px}
+.check p{font-size:14px;color:var(--mute)}
+.check p.mono{color:var(--text);font-size:13px}
+footer{padding:36px 0 60px;color:var(--mute);font-size:14px;text-align:center}
+
+@media (max-width:760px){
+  .grid2,.builder,.checks{grid-template-columns:1fr}
+  .step{grid-template-columns:1fr;gap:10px}
+  .num{width:44px;height:44px;font-size:18px}
+  .agent-row{grid-template-columns:1fr 34px}
+  .agent-row input:nth-child(2){grid-column:1/2}
+  .out-wrap{position:static}
+  .card li{flex-direction:column;gap:2px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="wrap">
+    <div class="eyebrow">Data Science Masterminds · Prompt Framework</div>
+    <h1>The <span>5-Line Agentic Pipeline</span> Prompt</h1>
+    <p class="lead">One repeatable structure to turn any workflow into a team of Claude agents. You define the goal, Claude writes the plan, you approve, then it scaffolds the project in your folder. Nothing runs until you say so.</p>
+    <nav class="toc">
+      <a href="#framework">1. Framework</a>
+      <a href="#claudemd">2. What is CLAUDE.md</a>
+      <a href="#samples">3. Annotated samples</a>
+      <a href="#builder">4. Build your prompt</a>
+      <a href="#mistakes">5. Common mistakes</a>
+      <a href="#recreate">6. Recreate this page</a>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+
+<!-- FRAMEWORK -->
+<section id="framework">
+  <h2>The framework</h2>
+  <p class="sub">Five lines, always in this order. Each line answers one question Claude would otherwise guess.</p>
+
+  <div class="formula">
+    <span class="chip" style="color:var(--c1)">Goal</span><span class="arrow">→</span>
+    <span class="chip" style="color:var(--c2)">CLAUDE.md</span><span class="arrow">→</span>
+    <span class="chip" style="color:var(--c3)">Agents</span><span class="arrow">→</span>
+    <span class="chip" style="color:var(--c4)">Approval gate</span><span class="arrow">→</span>
+    <span class="chip" style="color:var(--c5)">Local folder, no execution</span>
+  </div>
+  <br>
+
+  <div class="steps">
+    <div class="step" style="--c:var(--c1)">
+      <div class="num">1</div>
+      <div>
+        <h3>Goal: input → output</h3>
+        <p>Name the workflow in one sentence. A good goal has a clear <b>input</b> (raw regional data, 25 Markdown docs, a Supabase table) and a clear <b>output</b> (executive dashboard, organized knowledge base).</p>
+        <div class="pattern">Create a [workflow name] that turns [INPUT] into [OUTPUT].</div>
+        <p class="why"><b>Why:</b> if Claude can't name the input and output, it can't plan the steps in between.</p>
+      </div>
+    </div>
+
+    <div class="step" style="--c:var(--c2)">
+      <div class="num">2</div>
+      <div>
+        <h3>Create CLAUDE.md first</h3>
+        <p>Ask for the project's brain file before any agent exists: goal, workflow, folders, inputs, outputs, global rules, agent roles.</p>
+        <div class="pattern">First create CLAUDE.md with project goal, workflow, folders, inputs, outputs, and agent roles.</div>
+        <p class="why"><b>Why:</b> every agent reads it on start, so the whole team shares one plan. See the explainer below.</p>
+      </div>
+    </div>
+
+    <div class="step" style="--c:var(--c3)">
+      <div class="num">3</div>
+      <div>
+        <h3>Agents: one file, one job, one line</h3>
+        <p>List each agent as a numbered file with a single-line responsibility. Order = execution order. Each agent's output becomes the next agent's input.</p>
+        <div class="pattern">agent_1_[verb].md : [one-line job]
+agent_2_[verb].md : [one-line job]
+agent_3_[verb].md : [one-line job]</div>
+        <p class="why"><b>Why:</b> one job per agent makes failures easy to find and agents easy to swap or rerun.</p>
+      </div>
+    </div>
+
+    <div class="step" style="--c:var(--c4)">
+      <div class="num">4</div>
+      <div>
+        <h3>Approval gate: propose before building</h3>
+        <p>Make Claude show the architecture, workflow, folder scaffolding and outputs, then stop and wait for your yes.</p>
+        <div class="pattern">Before creating files, show the proposed architecture, workflow, folders, and outputs for approval.</div>
+        <p class="why"><b>Why:</b> fixing a plan costs one message. Fixing 6 generated files costs an hour.</p>
+      </div>
+    </div>
+
+    <div class="step" style="--c:var(--c5)">
+      <div class="num">5</div>
+      <div>
+        <h3>Local folder, build only</h3>
+        <p>Say where to build and that agents are created, not run. You activate them one by one later.</p>
+        <div class="pattern">Do it in the local folder. Do not execute the agents. Only create them.</div>
+        <p class="why"><b>Why:</b> you keep control. You review each agent file before it touches real data.</p>
+      </div>
+    </div>
+
+    <div class="step" style="--c:var(--c6)">
+      <div class="num">+</div>
+      <div>
+        <h3>Rules <span class="optional">optional</span></h3>
+        <p>Add guardrails when the data is sensitive or tricky: read-only access, date formats, join keys, privacy, "never change body text".</p>
+        <div class="pattern">Important rules:
+* Use read-only queries.
+* Never expose customer names, emails, or phone numbers.</div>
+        <p class="why"><b>Why:</b> rules here get copied into CLAUDE.md, so every agent obeys them.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CLAUDE.md -->
+<section id="claudemd">
+  <h2>What is CLAUDE.md?</h2>
+  <p class="sub">The project's operating manual. Claude reads it automatically every time it works in that folder.</p>
+
+  <div class="analogy">Think of it as the <b>briefing document</b> you give a new team before a project. The agents are specialists. CLAUDE.md is the brief they all read on day one, so nobody works off a different version of the plan.</div>
+
+  <div class="grid2">
+    <div class="card">
+      <h3>What goes inside</h3>
+      <ul>
+        <li><b>Project goal</b><span>The input → output sentence from line 1.</span></li>
+        <li><b>Workflow</b><span>Agent order and handoffs: who passes what to whom.</span></li>
+        <li><b>Folders</b><span>Where raw input, working files and final outputs live.</span></li>
+        <li><b>Inputs</b><span>Source files, tables, connectors.</span></li>
+        <li><b>Outputs</b><span>Every deliverable with its file name.</span></li>
+        <li><b>Global rules</b><span>Guardrails every agent must follow.</span></li>
+        <li><b>Agent roles</b><span>One line per agent, pointing to its .md file.</span></li>
+      </ul>
+    </div>
+    <div class="card">
+      <h3>Why it matters</h3>
+      <ul>
+        <li><b>Memory</b><span>Claude forgets between sessions. CLAUDE.md doesn't.</span></li>
+        <li><b>Consistency</b><span>Agent 4 follows the same rules as Agent 1.</span></li>
+        <li><b>Handoffs</b><span>Agents share results through files, not chat.</span></li>
+        <li><b>Reuse</b><span>Copy the folder, swap the data, rerun the pipeline.</span></li>
+      </ul>
+    </div>
+  </div>
+  <br>
+  <h3>Example skeleton</h3>
+<pre class="md"><span class="h"># Executive Reporting Pipeline</span>
+
+<span class="h">## Goal</span>
+Turn raw regional sales data into a one-slide executive PowerPoint
+and an HTML KPI dashboard for regional managers.
+
+<span class="h">## Workflow</span>
+<span class="k">agent_1_data_clean</span> → <span class="k">agent_2_summary</span> → <span class="k">agent_3_powerpoint</span>
+                                      ↘ <span class="k">agent_4_html</span>
+
+<span class="h">## Folders</span>
+data/raw/        <span class="c"># original files, never edited</span>
+data/clean/      <span class="c"># merged_data.csv from Agent 1</span>
+analysis/        <span class="c"># summary.md + kpis.json from Agent 2</span>
+outputs/         <span class="c"># executive.pptx, dashboard.html</span>
+agents/          <span class="c"># one .md per agent</span>
+
+<span class="h">## Global rules</span>
+- Agents share results through files, not chat.
+- Never overwrite data/raw/.
+- Stop and escalate if validation fails.
+
+<span class="h">## Agent roles</span>
+1. Clean, join, validate, save merged data.
+2. KPI, trend, exception and performance summary.
+3. One-slide executive PowerPoint.
+4. HTML KPI dashboard for regional managers.</pre>
+</section>
+
+<!-- SAMPLES -->
+<section id="samples">
+  <h2>Annotated samples</h2>
+  <p class="sub">The same framework, three different workflows. Colors show which line is doing which job.</p>
+
+  <div class="legend">
+    <span style="color:var(--c1);border-color:var(--c1)">1 Goal</span>
+    <span style="color:var(--c2);border-color:var(--c2)">2 CLAUDE.md</span>
+    <span style="color:var(--c3);border-color:var(--c3)">3 Agents</span>
+    <span style="color:var(--c4);border-color:var(--c4)">4 Approval</span>
+    <span style="color:var(--c5);border-color:var(--c5)">5 Local / no run</span>
+    <span style="color:var(--c6);border-color:var(--c6)">+ Rules</span>
+  </div>
+
+  <div class="tabs">
+    <button class="tab on" data-t="a"><span class="star">★</span> Executive reporting</button>
+    <button class="tab" data-t="b">eCommerce + Supabase</button>
+    <button class="tab" data-t="c">Knowledge base</button>
+  </div>
+
+  <div class="sample on" id="t-a">
+    <p class="meta"><b>The cleanest version.</b> Every line maps to exactly one part of the framework. Start here when teaching.</p>
+<div class="prompt"><span class="seg s1">Create an executive reporting pipeline from raw regional data.</span>
+
+<span class="seg s2">First create CLAUDE.md with project goal, workflow, folders, inputs, outputs, and agent roles.</span>
+
+<span class="seg s3">Agents:
+agent_1_data_clean.md : clean, join, validate, and save merged data.
+agent_2_summary.md : create KPI, trend, exception, and performance summary.
+agent_3_powerpoint.md : create a one-slide executive PowerPoint.
+agent_4_html.md : create an HTML KPI dashboard for regional managers.</span>
+
+<span class="seg s4">Before creating files, show the proposed architecture, workflow, folders, and outputs for approval.</span>
+
+<span class="seg s5">Do not execute the agents. Only create them.</span></div>
+    <div class="notes">
+      <div class="note"><b>Notice:</b> 9 lines total. No rules needed because the data isn't sensitive.</div>
+      <div class="note"><b>Notice:</b> Agents 3 and 4 both read Agent 2's output. One summary, two formats.</div>
+    </div>
+  </div>
+
+  <div class="sample" id="t-b">
+    <p class="meta"><b>Live database + privacy.</b> Shows how the Rules block protects real customer data.</p>
+<div class="prompt"><span class="seg s1">Create a five-agent e-commerce reporting pipeline using the `eCommerce` database connected through Supabase MCP.</span>
+
+<span class="seg s6">Important rules:
+* Use read-only queries.
+* Quote mixed-case column names.
+* Convert `"Date_of_Purchase"` from `DD-MM-YYYY`.
+* Join the customer and transaction tables using `"Customer_ID"`.
+* Never expose customer names, emails, or phone numbers.</span>
+
+<span class="seg s4">First, propose the architecture, workflow, folders, agent responsibilities, and outputs for my approval.</span>
+
+<span class="seg s2">After approval, create `CLAUDE.md`</span> <span class="seg s3">and these agents:
+* `agent1.md` : read the data dictionary (`DATA_DICTIONARY.md` if it is in this folder, otherwise the column definitions in Supabase) and the table names, then document every table and column.
+* `agent2.md` : explore, clean, join, and validate the data.
+* `agent3.md` : produce KPIs, trends, segments, exceptions, and business insights.
+* `agent4.md` : build a live Claude artifact dashboard from Agent 3's results.
+* `agent5.md` (optional) : add a chatbot to the dashboard artifact so I can chat with the data.
+
+Agents must share results through files, not chat. Give every agent clear inputs, steps, outputs, rules, completion criteria, and escalation instructions.</span>
+
+<span class="seg s5">Create files only. Do not run any agent. After creation, show the folder tree and wait for `Activate Agent 1`.</span></div>
+    <div class="notes">
+      <div class="note"><b>Notice:</b> Approval comes <i>before</i> CLAUDE.md here. Both orders work; the gate is what matters.</div>
+      <div class="note"><b>Upgrade:</b> "inputs, steps, outputs, rules, completion criteria, escalation" defines the anatomy of every agent file.</div>
+      <div class="note"><b>Upgrade:</b> "wait for <code>Activate Agent 1</code>" gives you a clear trigger phrase to start the run.</div>
+    </div>
+  </div>
+
+  <div class="sample" id="t-c">
+    <p class="meta"><b>Documents, not data.</b> Uses an INPUT / PROCESS / OUTPUT layout and a mid-pipeline approval stop.</p>
+<div class="prompt"><span class="seg s1">Create a knowledge-base organizing pipeline for the 25 NexaFlow Markdown documents in this folder.</span>
+<span class="seg s2">First create CLAUDE.md with project goal, workflow, folders, inputs, outputs, global rules, and agent roles.</span>
+
+<span class="seg s1">INPUT: 25 Markdown documents (product, pricing, implementation, case studies, sales). Some overlap, some are outdated.</span>
+<span class="seg s3">PROCESS:
+agent_1_inventory.md: read every document, build catalog.csv, flag duplicate IDs and version conflicts, propose 4 to 6 categories. Stop for approval.
+agent_2_organize.md: write YAML front matter using the shape below, copy each document into exactly one category folder. Never change body text.
+agent_3_index.md: create an index.md per category and a root index.md for index-first retrieval.
+agent_4_validate.md: check counts, links, metadata, unique IDs, and that bodies match the originals. Write validation_report.md.</span>
+<span class="seg s1">OUTPUT: organized knowledge_base folder, category indexes, root index.md, validation_report.md. Originals stay untouched.</span>
+
+<span class="seg s6">YAML SHAPE
+---
+document_id: "NEXA-001"
+title: "Full document title"
+main_category: "One primary category"
+rag_tags:
+  - "lowercase-kebab-case-tag"
+status: "Current, Historical, Draft, or Unknown"
+authoritative: "Yes or No"
+summary: "One or two factual sentences"
+use_when: "The kinds of questions this document should answer"
+--- </span><span class="mono" style="color:var(--mute)">(shortened)</span>
+
+<span class="seg s4">Before creating files, show the proposed architecture, workflow, folders, and outputs for approval.</span>
+<span class="seg s5">Do it in the local folder. Dont execute the workflow.</span></div>
+    <div class="notes">
+      <div class="note"><b>Notice:</b> The goal is split into INPUT and OUTPUT lines. Same job as line 1, just more explicit.</div>
+      <div class="note"><b>Upgrade:</b> Agent 1 has its own "Stop for approval". You can put gates inside the pipeline too.</div>
+      <div class="note"><b>Upgrade:</b> A schema (YAML shape) works as a rule: it tells Agent 2 exactly what "done" looks like.</div>
+    </div>
+  </div>
+</section>
+
+<!-- BUILDER -->
+<section id="builder">
+  <h2>Build your prompt</h2>
+  <p class="sub">Fill in the blanks. The prompt updates live. Copy it into Claude in an empty project folder.</p>
+
+  <div class="builder">
+    <div>
+      <div class="field">
+        <label>Pipeline name <i>(what workflow?)</i></label>
+        <input id="f-name" value="executive reporting pipeline">
+      </div>
+      <div class="field">
+        <label>Input <i>(what goes in?)</i></label>
+        <input id="f-in" value="raw regional sales data in this folder">
+      </div>
+      <div class="field">
+        <label>Output <i>(what comes out?)</i></label>
+        <input id="f-out" value="a one-slide executive PowerPoint and an HTML KPI dashboard">
+      </div>
+      <div class="field">
+        <label>Agents <i>(file name : one-line job)</i></label>
+        <div id="agents"></div>
+        <button class="btn" id="add-agent" type="button">+ Add agent</button>
+      </div>
+      <div class="field">
+        <label>Rules <i>(optional, one per line)</i></label>
+        <textarea id="f-rules" rows="3" placeholder="Use read-only queries.&#10;Never expose customer names or emails."></textarea>
+      </div>
+      <label class="toggle"><input type="checkbox" id="f-files" checked> Agents share results through files, not chat</label>
+      <label class="toggle"><input type="checkbox" id="f-anatomy" checked> Give every agent inputs, steps, outputs, rules, completion criteria, escalation</label>
+      <label class="toggle"><input type="checkbox" id="f-trigger" checked> Show folder tree and wait for "Activate Agent 1"</label>
+    </div>
+    <div class="out-wrap">
+      <div class="out-head">
+        <h3>Your prompt</h3>
+        <div><span class="copied" id="copied">Copied</span> <button class="btn primary" id="copy" type="button">Copy</button></div>
+      </div>
+      <div class="prompt" id="out"></div>
+    </div>
+  </div>
+</section>
+
+<!-- MISTAKES -->
+<section id="mistakes">
+  <h2>Common mistakes</h2>
+  <p class="sub">What breaks a pipeline prompt, and the one-line fix.</p>
+  <div class="checks">
+    <div class="check">
+      <div class="bad">Vague goal</div><p class="mono">"Analyze my data and make something useful."</p>
+      <div class="good">Fix</div><p>Name the input and the output: "turn raw regional data into an executive dashboard."</p>
+    </div>
+    <div class="check">
+      <div class="bad">One mega-agent</div><p class="mono">"agent.md: clean, analyze, chart, and report."</p>
+      <div class="good">Fix</div><p>One job per agent. If you write "and" three times, split it.</p>
+    </div>
+    <div class="check">
+      <div class="bad">No approval gate</div><p>Claude builds 8 files on a plan you never saw.</p>
+      <div class="good">Fix</div><p>"Before creating files, show the proposed architecture for approval."</p>
+    </div>
+    <div class="check">
+      <div class="bad">Agents run immediately</div><p>Real data gets touched before you review anything.</p>
+      <div class="good">Fix</div><p>"Do not execute the agents. Only create them."</p>
+    </div>
+    <div class="check">
+      <div class="bad">Chat handoffs</div><p>Agent 3 can't find what Agent 2 "said".</p>
+      <div class="good">Fix</div><p>"Agents share results through files, not chat."</p>
+    </div>
+    <div class="check">
+      <div class="bad">Rules in your head</div><p>Date formats, join keys, privacy limits never written down.</p>
+      <div class="good">Fix</div><p>Add a Rules block. It flows into CLAUDE.md for every agent.</p>
+    </div>
+  </div>
+</section>
+
+<!-- RECREATE -->
+<section id="recreate">
+  <h2>Recreate this page</h2>
+  <p class="sub">Paste this into Claude to build your own version of this teaching page. Swap in your own sample prompts at the end.</p>
+  <div class="out-head">
+    <h3>Recreate prompt</h3>
+    <div><span class="copied" id="copied2">Copied</span> <button class="btn primary" id="copy2" type="button">Copy</button></div>
+  </div>
+<div class="prompt" id="recreate-prompt">Create an artifact: a single-page interactive HTML guide that teaches "The 5-Line Agentic Pipeline Prompt". Dark theme, mobile-friendly, one color per framework part. No em dashes.
+
+Sections:
+1. Framework: 5 numbered cards in this order. Each card has a one-line explanation, a fill-in pattern, and a one-line "why".
+   - Goal: workflow defined as input → output
+   - CLAUDE.md: create it first with goal, workflow, folders, inputs, outputs, global rules, agent roles
+   - Agents: one file per agent, one-line job each, in execution order
+   - Approval gate: propose architecture, workflow, folders, outputs before creating files
+   - Local folder: build in the local folder, create agents only, do not execute
+   - Plus an optional Rules card (read-only, privacy, formats, join keys)
+2. What is CLAUDE.md: a simple analogy, what goes inside, why it matters, and a short example skeleton.
+3. Annotated samples: my sample prompts below in tabs, with each line highlighted in the color of the framework part it fills, plus 2 or 3 teaching notes per sample.
+4. Prompt builder: input fields for pipeline name, input, output, agents (add/remove rows), optional rules, and toggles for "share results through files", "agent anatomy", "wait for Activate Agent 1". Live color-coded preview with a Copy button.
+5. Common mistakes: 6 cards, each showing the mistake and the one-line fix.
+
+My sample prompts:
+[paste your sample prompts here]</div>
+</section>
+
+</main>
+
+<footer>Goal → CLAUDE.md → Agents → Approve → Build locally. Then activate one agent at a time.</footer>
+
+<script>
+document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>{
+  document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));
+  document.querySelectorAll('.sample').forEach(x=>x.classList.remove('on'));
+  b.classList.add('on');document.getElementById('t-'+b.dataset.t).classList.add('on');
+}));
+
+const agentsEl=document.getElementById('agents');
+const defaults=[
+  ['agent_1_data_clean.md','clean, join, validate, and save merged data.'],
+  ['agent_2_summary.md','create KPI, trend, exception, and performance summary.'],
+  ['agent_3_powerpoint.md','create a one-slide executive PowerPoint.'],
+  ['agent_4_html.md','create an HTML KPI dashboard for regional managers.']
+];
+function esc(s){return s.replace(/[&<>]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;'}[c]))}
+function addAgent(f='',d=''){
+  const n=agentsEl.children.length+1;
+  const row=document.createElement('div');row.className='agent-row';
+  row.innerHTML=`<input placeholder="agent_${n}_name.md" value="${esc(f)}"><input placeholder="one-line job" value="${esc(d)}"><button class="btn x" type="button" title="Remove">×</button>`;
+  row.querySelector('.x').onclick=()=>{row.remove();render()};
+  row.querySelectorAll('input').forEach(i=>i.oninput=render);
+  agentsEl.appendChild(row);
+}
+defaults.forEach(a=>addAgent(...a));
+document.getElementById('add-agent').onclick=()=>{addAgent();render()};
+
+function v(id){return document.getElementById(id).value.trim()}
+function seg(c,t){return `<span class="seg ${c}">${esc(t)}</span>`}
+function render(){
+  const name=v('f-name')||'[pipeline]',inp=v('f-in')||'[input]',out=v('f-out')||'[output]';
+  const agents=[...agentsEl.children].map(r=>{const i=r.querySelectorAll('input');return [i[0].value.trim(),i[1].value.trim()]}).filter(a=>a[0]||a[1]);
+  const rules=v('f-rules').split('\n').map(s=>s.trim()).filter(Boolean);
+  let p=[];
+  p.push(seg('s1',`Create a ${name} that turns ${inp} into ${out}.`));
+  if(rules.length)p.push(seg('s6','Important rules:\n'+rules.map(r=>'* '+r).join('\n')));
+  p.push(seg('s2','First create CLAUDE.md with project goal, workflow, folders, inputs, outputs, global rules, and agent roles.'));
+  let a='Agents:\n'+agents.map(x=>`${x[0]||'agent.md'} : ${x[1]||'[job]'}`).join('\n');
+  const extra=[];
+  if(document.getElementById('f-files').checked)extra.push('Agents must share results through files, not chat.');
+  if(document.getElementById('f-anatomy').checked)extra.push('Give every agent clear inputs, steps, outputs, rules, completion criteria, and escalation instructions.');
+  if(extra.length)a+='\n\n'+extra.join(' ');
+  p.push(seg('s3',a));
+  p.push(seg('s4','Before creating files, show the proposed architecture, workflow, folders, and outputs for approval.'));
+  let last='Do it in the local folder. Do not execute the agents. Only create them.';
+  if(document.getElementById('f-trigger').checked)last+=' After creation, show the folder tree and wait for "Activate Agent 1".';
+  p.push(seg('s5',last));
+  document.getElementById('out').innerHTML=p.join('\n\n');
+}
+['f-name','f-in','f-out','f-rules'].forEach(id=>document.getElementById(id).oninput=render);
+['f-files','f-anatomy','f-trigger'].forEach(id=>document.getElementById(id).onchange=render);
+render();
+
+document.getElementById('copy').onclick=async()=>{
+  const txt=document.getElementById('out').innerText;
+  try{await navigator.clipboard.writeText(txt)}catch(e){
+    const r=document.createRange();r.selectNodeContents(document.getElementById('out'));
+    const s=getSelection();s.removeAllRanges();s.addRange(r);
+  }
+  const c=document.getElementById('copied');c.classList.add('show');setTimeout(()=>c.classList.remove('show'),1500);
+};
+document.getElementById('copy2').onclick=async()=>{
+  const el=document.getElementById('recreate-prompt');
+  try{await navigator.clipboard.writeText(el.innerText)}catch(e){
+    const r=document.createRange();r.selectNodeContents(el);const s=getSelection();s.removeAllRanges();s.addRange(r);
+  }
+  const c=document.getElementById('copied2');c.classList.add('show');setTimeout(()=>c.classList.remove('show'),1500);
+};
+</script>
+</body>
+</html>
